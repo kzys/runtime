@@ -86,6 +86,14 @@ func TestAttachBlockDevice_Isolated(t *testing.T) {
 	})
 }
 
+func cgroupExists(name string) (bool, error) {
+	_, err := os.Stat(filepath.Join("/sys/fs/cgroup", name))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func fsSafeTestName(tb testing.TB) string {
 	return strings.ReplaceAll(tb.Name(), "/", "-")
 }
@@ -140,8 +148,14 @@ func testJailer(t *testing.T, jailerConfig *proto.JailerConfig) {
 	fcClient, err := integtest.NewFCControlClient(integtest.ContainerdSockPath)
 	require.NoError(t, err)
 
-	_, err = fcClient.CreateVM(ctx, &request)
+	resp, err := fcClient.CreateVM(ctx, &request)
 	require.NoError(t, err)
+
+	if jailerConfig != nil {
+		exists, err := cgroupExists(resp.CgroupPath)
+		assert.NoError(t, err)
+		assert.True(t, exists)
+	}
 
 	c, err := client.NewContainer(ctx,
 		vmID+"-container",
