@@ -83,8 +83,8 @@ $(SUBDIRS):
 %-in-docker:
 	docker run --rm \
 		--user $(UID):$(GID) \
-		--volume $(CURDIR):/src \
-		--volume $(GO_CACHE_VOLUME_NAME):/go \
+		--volume $(CURDIR):/src:z \
+		--volume $(GO_CACHE_VOLUME_NAME):/go:z \
 		--env HOME=/tmp \
 		--env GOPATH=/go \
 		--env GO111MODULES=on \
@@ -383,8 +383,8 @@ tools/runc-builder-stamp: tools/docker/Dockerfile.runc-builder
 
 $(RUNC_BIN): $(RUNC_DIR)/VERSION tools/runc-builder-stamp
 	docker run --rm --user $(UID) \
-		--volume $(CURDIR)/$(RUNC_DIR):/gopath/src/github.com/opencontainers/runc \
-		--volume $(CURDIR)/deps:/target \
+		--volume $(CURDIR)/$(RUNC_DIR):/gopath/src/github.com/opencontainers/runc:z \
+		--volume $(CURDIR)/deps:/target:z \
 		-e HOME=/tmp \
 		-e GOPATH=/gopath \
 		--workdir /gopath/src/github.com/opencontainers/runc \
@@ -414,8 +414,8 @@ tools/stargz-builder-stamp: tools/docker/Dockerfile.stargz-builder
 $(STARGZ_BIN): $(STARGZ_DIR)/go.mod tools/stargz-builder-stamp
 	docker run --rm -it \
 	--user $(UID):$(GID) \
-	--volume $(GO_CACHE_VOLUME_NAME):/go \
-	--volume $(CURDIR):/src \
+	--volume $(GO_CACHE_VOLUME_NAME):/go:z \
+	--volume $(CURDIR):/src:z \
 	-e HOME=/tmp \
 	-e GOPATH=/go \
 	-e GOPROXY=$(shell go env GOPROXY) \
